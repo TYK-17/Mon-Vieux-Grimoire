@@ -10,6 +10,13 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.2.1",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.8.7",
+    "mongoose-unique-validator": "^4.0.1",
+    "multer": "^1.4.5-lts.2",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -48,6 +55,21 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsx-a11y": "^6.6.1",
     "eslint-plugin-react": "^7.31.11",
-    "eslint-plugin-react-hooks": "^4.6.0"
-  }
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "nodemon": "^3.1.10"
+  },
+  "description": "Faites la commande `npm install` pour installer les dépendances puis `npm start` pour lancer le projet.",
+  "main": "babel-plugin-macros.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TYK-17/Mon-Vieux-Grimoire.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/TYK-17/Mon-Vieux-Grimoire/issues"
+  },
+  "homepage": "https://github.com/TYK-17/Mon-Vieux-Grimoire#readme"
 }
