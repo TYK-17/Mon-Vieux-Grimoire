@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import { Schema, model } from "mongoose";
 
-const bookSchema = mongoose.Schema({
+const bookSchema = new Schema({
   userId: { type: String, required: true },
   title: { type: String, required: true },
   author: { type: String, required: true },
@@ -16,4 +16,4 @@ const bookSchema = mongoose.Schema({
   averageRating: { type: Number, default: 0 },
 });
 
-module.exports = mongoose.model("Book", bookSchema);
+export default model("Book", bookSchema);

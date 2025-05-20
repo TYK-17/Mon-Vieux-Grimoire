@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "sharp": "^0.32.4"
+    "helmet": "^8.1.0"
   }
 }

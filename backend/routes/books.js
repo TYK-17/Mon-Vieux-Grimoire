@@ -1,25 +1,38 @@
 const express = require("express");
 const router = express.Router();
-const bookCtrl = require("../controllers/books");
+
+const {
+  getAllBooks,
+  getOneBook,
+  getBestRatedBooks,
+  createBook,
+  modifyBook,
+  deleteBook,
+  rateBook,
+} = require("../controllers/books");
+
 const auth = require("../middleware/auth");
-const multer = require("../middleware/multer-config");
 const { upload, processImage } = require("../middleware/multer-config");
 
-// Route pour les 3 meilleurs livres
-router.get("/bestrating", bookCtrl.getBestRatedBooks);
+// 🔍 Obtenir les 3 livres les mieux notés
+router.get("/bestrating", getBestRatedBooks);
 
-// Routes CRUD
-router.get("/", bookCtrl.getAllBooks);
-router.get("/:id", bookCtrl.getOneBook);
+// 📚 Obtenir tous les livres
+router.get("/", getAllBooks);
 
-// Route pour créer un livre avec une image
-// On utilise multer pour l'upload de l'image et processImage pour la traiter
-router.post("/", auth, upload, processImage, bookCtrl.createBook);
+// 📖 Obtenir un livre par ID
+router.get("/:id", getOneBook);
 
-router.put("/:id", auth, upload, processImage, bookCtrl.modifyBook);
-router.delete("/:id", auth, bookCtrl.deleteBook);
+// ➕ Ajouter un nouveau livre avec image
+router.post("/", auth, upload, processImage, createBook);
 
-// Route pour noter un livre
-router.post("/:id/rating", auth, bookCtrl.rateBook);
+// ✏️ Modifier un livre avec ou sans nouvelle image
+router.put("/:id", auth, upload, processImage, modifyBook);
+
+// ❌ Supprimer un livre
+router.delete("/:id", auth, deleteBook);
+
+// ⭐ Ajouter une note à un livre
+router.post("/:id/rating", auth, rateBook);
 
 module.exports = router;

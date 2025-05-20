@@ -1,10 +1,9 @@
-// backend/middleware/multer-config.js
-
 const multer = require("multer");
-const sharp = require("sharp"); // Importer Sharp
+const sharp = require("sharp");
 const path = require("path");
+const fs = require("fs");
 
-// Définir les types MIME supportés
+// 🎯 Types MIME autorisés
 const MIME_TYPES = {
   "image/jpg": "jpg",
   "image/jpeg": "jpg",
@@ -12,45 +11,70 @@ const MIME_TYPES = {
   "image/webp": "webp",
 };
 
-// Utilisation de memoryStorage pour garder l'image en mémoire
+// 📦 Stockage en mémoire (pour Sharp)
 const storage = multer.memoryStorage();
 
-// Configurer multer pour accepter les fichiers images
+// 📥 Middleware réception de fichier
 const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limiter la taille à 5MB par fichier
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 Mo
   fileFilter: (req, file, cb) => {
-    // Vérifier que le type MIME est valide
+    console.log("📨 Fichier reçu :");
+    console.log("  • Champ       :", file.fieldname);
+    console.log("  • Nom         :", file.originalname);
+    console.log("  • Type MIME   :", file.mimetype);
+
     const isValid = MIME_TYPES[file.mimetype];
-    const error = isValid ? null : new Error("Mauvais type de fichier !");
+    const error = isValid ? null : new Error("❌ Mauvais type de fichier !");
+    if (!isValid) {
+      console.error("⛔ Type MIME rejeté :", file.mimetype);
+    }
     cb(error, isValid);
   },
 }).single("image");
 
-// Middleware pour traiter l'image après l'upload
-const processImage = (req, res, next) => {
+// 🖼️ Traitement de l'image avec Sharp
+const processImage = async (req, res, next) => {
   if (!req.file) {
-    console.log("Aucune image envoyée");
-    return next(); // Si aucune image n'est envoyée, passer à la suite
+    console.log("⚠️ Aucune image à traiter dans processImage.");
+    return next();
   }
 
-  console.log("Fichier reçu : ", req.file.originalname); // Log du nom de l'image
-  const imageBuffer = req.file.buffer; // Récupérer le buffer de l'image
+  try {
+    const imageBuffer = req.file.buffer;
 
-  // Utilisation de sharp pour optimiser et redimensionner l'image
-  sharp(imageBuffer)
-    .resize(800) // Redimensionner l'image à 800px de large
-    .webp({ quality: 80 }) // Compresser l'image au format WebP avec une qualité de 80%
-    .toFile(`backend/images/${req.file.filename}`, (err, info) => {
-      if (err) {
-        console.error("Erreur lors du traitement de l'image", err);
-        return res
-          .status(500)
-          .json({ error: "Erreur lors du traitement de l'image" });
-      }
-      console.log("Image traitée et enregistrée", info);
-      next(); // Passer à l'étape suivante (enregistrement du livre)
-    });
+    // Nettoyage nom fichier
+    const safeName = req.file.originalname
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9._-]/g, "")
+      .toLowerCase();
+
+    const fileName = `${Date.now()}_${safeName}.webp`;
+    const imagesDir = path.join(__dirname, "../images");
+    const filePath = path.join(imagesDir, fileName);
+
+    // Dossier images
+    if (!fs.existsSync(imagesDir)) {
+      fs.mkdirSync(imagesDir, { recursive: true });
+      console.log("📂 Dossier /images créé.");
+    }
+
+    console.log("🛠️ Traitement image avec Sharp...");
+    await sharp(imageBuffer).resize(800).webp({ quality: 80 }).toFile(filePath);
+    console.log("✅ Sharp a terminé sans erreur");
+
+    req.file.filename = fileName;
+    console.log("✅ Image optimisée et enregistrée :", fileName);
+    console.log("📁 Emplacement :", filePath);
+    console.log("📎 req.file.filename défini :", req.file.filename);
+
+    next();
+  } catch (err) {
+    console.error("❌ Erreur traitement image avec Sharp :", err);
+    return res
+      .status(500)
+      .json({ error: "Erreur lors du traitement de l'image." });
+  }
 };
 
 module.exports = { upload, processImage };
