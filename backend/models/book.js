@@ -1,4 +1,5 @@
-import { Schema, model } from "mongoose";
+const mongoose = require("mongoose");
+const { Schema, model } = mongoose;
 
 const bookSchema = new Schema({
   userId: { type: String, required: true },
@@ -16,4 +17,4 @@ const bookSchema = new Schema({
   averageRating: { type: Number, default: 0 },
 });
 
-export default model("Book", bookSchema);
+module.exports = model("Book", bookSchema);

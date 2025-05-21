@@ -40,41 +40,54 @@ const processImage = async (req, res, next) => {
     return next();
   }
 
+  const imageBuffer = req.file.buffer;
+
+  // ✅ Déclaration de safeName ici pour qu’il soit accessible même en cas d’erreur
+  const safeName = req.file.originalname
+    .replace(/\s+/g, "_")
+    .replace(/[^a-zA-Z0-9._-]/g, "")
+    .toLowerCase();
+
+  const fileName = `${Date.now()}_${safeName}.webp`;
+  const imagesDir = path.join(__dirname, "../images");
+  const filePath = path.join(imagesDir, fileName);
+
+  if (!fs.existsSync(imagesDir)) {
+    fs.mkdirSync(imagesDir, { recursive: true });
+    console.log("📂 Dossier /images créé.");
+  }
+
   try {
-    const imageBuffer = req.file.buffer;
-
-    // Nettoyage nom fichier
-    const safeName = req.file.originalname
-      .replace(/\s+/g, "_")
-      .replace(/[^a-zA-Z0-9._-]/g, "")
-      .toLowerCase();
-
-    const fileName = `${Date.now()}_${safeName}.webp`;
-    const imagesDir = path.join(__dirname, "../images");
-    const filePath = path.join(imagesDir, fileName);
-
-    // Dossier images
-    if (!fs.existsSync(imagesDir)) {
-      fs.mkdirSync(imagesDir, { recursive: true });
-      console.log("📂 Dossier /images créé.");
-    }
-
     console.log("🛠️ Traitement image avec Sharp...");
-    await sharp(imageBuffer).resize(800).webp({ quality: 80 }).toFile(filePath);
-    console.log("✅ Sharp a terminé sans erreur");
+    const sharpInstance = sharp(imageBuffer);
+    const metadata = await sharpInstance.metadata();
+    console.log("📷 Metadata de l'image :", metadata);
+
+    await sharpInstance.resize(800).webp({ quality: 80 }).toFile(filePath);
 
     req.file.filename = fileName;
     console.log("✅ Image optimisée et enregistrée :", fileName);
-    console.log("📁 Emplacement :", filePath);
-    console.log("📎 req.file.filename défini :", req.file.filename);
-
-    next();
   } catch (err) {
-    console.error("❌ Erreur traitement image avec Sharp :", err);
-    return res
-      .status(500)
-      .json({ error: "Erreur lors du traitement de l'image." });
+    console.error("❌ Erreur Sharp complète :", err);
+
+    // ✅ Enregistrement brut en cas d’échec Sharp
+    const fallbackName = `${Date.now()}_${safeName}`;
+    const fallbackPath = path.join(imagesDir, fallbackName);
+
+    try {
+      fs.writeFileSync(fallbackPath, imageBuffer);
+      req.file.filename = fallbackName;
+      console.log("✅ Image brute enregistrée :", fallbackName);
+    } catch (writeErr) {
+      console.error("❌ Erreur écriture fallback :", writeErr.message);
+      return res
+        .status(500)
+        .json({ error: "Échec traitement + fallback image." });
+    }
   }
+
+  console.log("🔚 processImage terminé ✅");
+  next();
 };
 
 module.exports = { upload, processImage };

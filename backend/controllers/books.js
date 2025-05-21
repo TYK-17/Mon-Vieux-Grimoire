@@ -28,9 +28,13 @@ exports.createBook = async (req, res) => {
     }`;
 
     const book = new Book(parsedBook);
+    console.log("🧱 Données à enregistrer :", parsedBook);
+    console.log("📎 Image URL :", parsedBook.imageUrl);
+
     const savedBook = await book.save();
     res.status(201).json(savedBook);
   } catch (err) {
+    console.error("❌ Erreur dans createBook :", err.message, err);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
