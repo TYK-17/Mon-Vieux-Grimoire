@@ -5,36 +5,60 @@ const path = require("path");
 // 📚 Créer un livre
 exports.createBook = async (req, res) => {
   console.log("📥 createBook appelé");
-  console.log("🧪 [createBook] Début - req.file:", req.file);
-  console.log("🧪 [createBook] Début - req.body.book:", req.body.book);
+  console.log("🧪 [createBook] req.file:", req.file);
+
+  console.log("🧪 [createBook] req.body:", req.body);
+  console.log("🧪 [createBook] typeof req.body.book:", typeof req.body.book);
+
+  console.log("🧪 [createBook] req.body.book:", req.body.book);
+
   try {
     if (!req.file || !req.body.book) {
       return res.status(400).json({ message: "Image et données requises." });
     }
 
     const parsedBook = JSON.parse(req.body.book);
-    parsedBook.userId = req.auth.userId;
-    parsedBook.year = Number(parsedBook.year);
+    console.log("🔍 parsedBook brut :", parsedBook);
 
+    // Vérifications basiques
+    const { title, author, genre, year, averageRating } = parsedBook;
+    if (!title || !author || !genre || !year) {
+      return res.status(400).json({ message: "Champs manquants." });
+    }
+
+    console.log("🟢 [createBook] req.auth:", req.auth);
+    parsedBook.userId = req.auth.userId;
+    parsedBook.year = Number(year);
     parsedBook.ratings = [
       {
         userId: req.auth.userId,
-        grade: parseInt(parsedBook.averageRating, 10) || 0,
+        grade: parseInt(averageRating, 10) || 0,
       },
     ];
     parsedBook.averageRating = parsedBook.ratings[0].grade;
+
+    // Supprimer champs inutiles
+    delete parsedBook._id;
+    delete parsedBook._userId;
+
+    // Vérifie que le nom de fichier existe
+    if (!req.file.filename) {
+      return res
+        .status(500)
+        .json({ message: "Image non traitée correctement." });
+    }
+
     parsedBook.imageUrl = `${req.protocol}://${req.get("host")}/images/${
       req.file.filename
     }`;
 
-    const book = new Book(parsedBook);
-    console.log("🧱 Données à enregistrer :", parsedBook);
-    console.log("📎 Image URL :", parsedBook.imageUrl);
+    console.log("✅ Données finales à sauvegarder :", parsedBook);
 
+    const book = new Book(parsedBook);
     const savedBook = await book.save();
     res.status(201).json(savedBook);
   } catch (err) {
-    console.error("❌ Erreur dans createBook :", err.message, err);
+    console.error("❌ Erreur createBook :", err.message, err);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
