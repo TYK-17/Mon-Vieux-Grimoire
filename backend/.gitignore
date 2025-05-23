@@ -1,3 +1,6 @@
 node_modules/
 .env
-/backend/images/
+# Ignorer tout le contenu du dossier images/
+images/*
+# Sauf le fichier .gitkeep
+!images/.gitkeep

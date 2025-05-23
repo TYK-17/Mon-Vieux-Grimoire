@@ -17,7 +17,7 @@ const storage = multer.memoryStorage();
 // 📥 Middleware réception de fichier
 const upload = multer({
   storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2 Mo
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 Mo
   fileFilter: (req, file, cb) => {
     console.log("📨 Fichier reçu :");
     console.log("  • Champ       :", file.fieldname);

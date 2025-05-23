@@ -20,10 +20,19 @@ exports.createBook = async (req, res) => {
     const parsedBook = JSON.parse(req.body.book);
     console.log("🔍 parsedBook brut :", parsedBook);
 
-    // Vérifications basiques
     const { title, author, genre, year, averageRating } = parsedBook;
+
+    // 1️⃣ Vérifie la présence des champs obligatoires
     if (!title || !author || !genre || !year) {
       return res.status(400).json({ message: "Champs manquants." });
+    }
+
+    // 2️⃣ Valide le format de l’année
+    if (!/^\d{4}$/.test(String(year))) {
+      return res.status(400).json({
+        message:
+          "L'année de publication doit être un nombre à 4 chiffres (ex : 2020).",
+      });
     }
 
     console.log("🟢 [createBook] req.auth:", req.auth);
@@ -100,6 +109,14 @@ exports.modifyBook = async (req, res) => {
     let updatedBook = req.file ? JSON.parse(req.body.book) : req.body;
     updatedBook.userId = req.auth.userId;
     updatedBook.year = Number(updatedBook.year);
+
+    // 👉 Vérification de l'année
+    if (!/^\d{4}$/.test(String(updatedBook.year))) {
+      return res.status(400).json({
+        message:
+          "L'année de publication doit être un nombre à 4 chiffres (ex : 2020).",
+      });
+    }
 
     if (req.file) {
       updatedBook.imageUrl = `${req.protocol}://${req.get("host")}/images/${
