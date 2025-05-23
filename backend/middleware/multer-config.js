@@ -39,6 +39,7 @@ const processImage = async (req, res, next) => {
 
   if (!req.file) {
     console.log("⚠️ Aucune image à traiter dans processImage.");
+    console.log("🔚 processImage terminé ✅ (no file)");
     return next();
   }
 
@@ -53,9 +54,11 @@ const processImage = async (req, res, next) => {
   const ext = path.extname(safeName);
   const baseName = path.basename(safeName, ext);
   const fileName = `${Date.now()}_${baseName}.webp`;
-
+  console.log(fileName);
   const imagesDir = path.join(__dirname, "../images");
+  console.log(imagesDir);
   const filePath = path.join(imagesDir, fileName);
+  console.log(filePath);
 
   if (!fs.existsSync(imagesDir)) {
     fs.mkdirSync(imagesDir, { recursive: true });
@@ -73,10 +76,17 @@ const processImage = async (req, res, next) => {
       console.warn("⚠️ Impossible de lire les métadonnées :", metaErr.message);
     }
 
-    await sharpInstance
-      .resize({ width: 800 })
-      .webp({ quality: 80, alphaQuality: 80 })
-      .toFile(filePath);
+    console.log(filePath);
+    try {
+      await sharpInstance
+        .resize(824, 1040, { fit: "contain" })
+        .webp({ quality: 80, alphaQuality: 80 })
+        .toFile(filePath);
+
+      console.log("🟣 Après resize/toFile");
+    } catch (resizeErr) {
+      console.error("🔥 Erreur pendant resize/toFile:", resizeErr);
+    }
 
     req.file.filename = fileName;
     console.log("✅ Image optimisée et enregistrée :", fileName);
@@ -93,14 +103,15 @@ const processImage = async (req, res, next) => {
       console.log("✅ Image brute enregistrée :", fallbackName);
     } catch (writeErr) {
       console.error("❌ Erreur écriture fallback :", writeErr.message);
+      console.log("🔚 processImage terminé ❌ (échec fallback)");
       return res
         .status(500)
         .json({ error: "Échec traitement + fallback image." });
     }
   }
 
-  console.log("🔚 processImage terminé ✅");
-  next();
+  console.log("🔚 processImage terminé ✅ (avant next)");
+  return next();
 };
 
 module.exports = { upload, processImage };

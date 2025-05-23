@@ -146,17 +146,26 @@ exports.deleteBook = async (req, res) => {
 // ⭐ Noter un livre
 exports.rateBook = async (req, res) => {
   try {
-    const { rating, userId } = req.body;
-    if (rating < 0 || rating > 5)
+    const rating = req.body.rating; // On ne prend PAS userId depuis le body !
+    const userId = req.auth.userId; // On prend le userId sécurisé du token
+
+    // Validation simple (optionnel : tu peux ajuster selon tes règles)
+    if (rating < 0 || rating > 5) {
       return res.status(400).json({ message: "Note invalide." });
+    }
 
     const book = await Book.findOne({ _id: req.params.id });
     if (!book) return res.status(404).json({ message: "Livre introuvable." });
 
     const hasRated = book.ratings.find((r) => r.userId === userId);
-    if (hasRated) return res.status(400).json({ message: "Livre déjà noté." });
+    if (hasRated) {
+      return res.status(400).json({ message: "Livre déjà noté." });
+    }
 
+    // On ajoute la nouvelle note
     book.ratings.push({ userId, grade: rating });
+
+    // Calcul de la nouvelle moyenne
     const sum = book.ratings.reduce((acc, r) => acc + r.grade, 0);
     book.averageRating = Math.round((sum / book.ratings.length) * 10) / 10;
 

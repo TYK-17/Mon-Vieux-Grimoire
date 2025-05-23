@@ -30,6 +30,14 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// Pour autoriser l'affichage d'images cross-origin (front <-> back)
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  next();
+});
+
 // Log des requêtes (placé avant les routes)
 app.use((req, res, next) => {
   console.log(`Requête reçue depuis ${req.get("origin")} vers ${req.url}`);
@@ -37,7 +45,14 @@ app.use((req, res, next) => {
 });
 
 // Fichiers statiques
-app.use("/images", express.static(path.join(__dirname, "images")));
+app.use(
+  "/images",
+  (req, res, next) => {
+    console.log(`[Images] Accès à ${req.url}`);
+    next();
+  },
+  express.static(path.join(__dirname, "images"))
+);
 
 // Routes API
 app.use("/api/auth", authRoutes);
