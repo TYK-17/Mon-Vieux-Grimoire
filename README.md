@@ -32,16 +32,17 @@ Le front React est fourni par OpenClassrooms, ce dépôt concerne principalement
 
 ### 1. Cloner le dépôt
 
-```bash
-git clone https://github.com/votre-utilisateur/mon-vieux-grimoire.git
-cd mon-vieux-grimoire
+`git clone https://github.com/votre-utilisateur/mon-vieux-grimoire.git`
 
-## Installer et lancer le backend npm start
+`cd mon-vieux-grimoire`
 
-## Installer et lancer le frontend npm stat
+Installer et lancer le backend :
+`npm start`
 
-Le backend sera accessible sur http://localhost:4000
-Le frontend sur http://localhost:3000
+Installer et lancer le frontend :
+`npm start`
+
+Le backend sera accessible sur `http://localhost:4000`
+Le frontend sur `http://localhost:3000`
 
 Enjoy 😉
-```
