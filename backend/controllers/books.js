@@ -22,12 +22,12 @@ exports.createBook = async (req, res) => {
 
     const { title, author, genre, year, averageRating } = parsedBook;
 
-    // 1️⃣ Vérifie la présence des champs obligatoires
+    // Vérifie la présence des champs obligatoires
     if (!title || !author || !genre || !year) {
       return res.status(400).json({ message: "Champs manquants." });
     }
 
-    // 2️⃣ Valide le format de l’année
+    // Valide le format de l’année
     if (!/^\d{4}$/.test(String(year))) {
       return res.status(400).json({
         message:
